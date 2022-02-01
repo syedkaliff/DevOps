@@ -9,6 +9,19 @@ data "aws_ami" "server_ami" {
   }
 } 
 
+data "aws_ami" "windows" {
+     most_recent = true     
+filter {
+       name   = "name"
+       values = ["Windows_Server-2019-English-Full-Base-*"]  
+  }     
+filter {
+       name   = "virtualization-type"
+       values = ["hvm"]  
+  }     
+owners = ["801119661308"] # Canonical
+}
+
 resource "random_id" "mtc_node_id" {
   byte_length = 2
   count       = var.main_instance_count
@@ -23,20 +36,27 @@ data "aws_ami" "amazon-2" {
   }
   owners = ["amazon"]
 }
-*/
+
 resource "aws_key_pair" "mtc_auth" {
   key_name   = var.key_name
   public_key = file(var.public_key_path)
 }
-
+*/
 resource "aws_instance" "mtc_main" {
   count                  = var.main_instance_count
   instance_type          = var.main_instance_type
-  ami                    = data.aws_ami.server_ami.id
-  key_name               = aws_key_pair.mtc_auth.id
+  ami                    = data.aws_ami.windows.id
+  key_name               = "windows"
   vpc_security_group_ids = [aws_security_group.mtc_sg.id]
   subnet_id              = aws_subnet.mtc_public_subnet[count.index].id
   # user_data = templatefile("./main-userdata.tpl", {new_hostname = "mtc-main-${random_id.mtc_node_id[count.index].dec}"})
+ user_data = <<EOF
+<powershell>
+$admin = [adsi]("WinNT://./administrator, user")
+$admin.PSBase.Invoke("SetPassword", "myTempPassword123!")
+Invoke-Expression ((New-Object System.Net.Webclient).DownloadString('https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1'))
+</powershell>
+EOF
   root_block_device {
     volume_size = var.main_vol_size
   }
@@ -45,7 +65,11 @@ resource "aws_instance" "mtc_main" {
   }
 
   provisioner "local-exec" {
-    command = "printf '\n${self.public_ip} ansible_user=ubuntu' >> aws_hosts && aws ec2 wait instance-status-ok --instance-ids ${self.id} --region us-west-1"
+   # command = "printf '\n${self.public_ip} ansible_user=ubuntu' >> aws_hosts && aws ec2 wait instance-status-ok --instance-ids ${self.id} --region us-west-1"
+    command = <<-EOT
+    printf '%s\n' 2a '${self.public_ip} ansible_user=administrator' . x | ex aws_hosts 
+    aws ec2 wait instance-status-ok --instance-ids ${self.id} --region us-west-1
+    EOT
          
   }
 
@@ -73,7 +97,7 @@ resource "aws_instance" "mtc_main" {
 resource "null_resource" "grafana_install" {
   depends_on = [aws_instance.mtc_main]
   provisioner "local-exec" {
-    command = "ansible-playbook -i aws_hosts --key-file /home/syed/.ssh/sk4evercache /home/syed/sample/devops-in-the-cloud/03-Ansible/08-Waiting_for_EC2/playbooks/grafana-playbook.yml"
+    command = "ansible-playbook -i aws_hosts --key-file /home/syed/.ssh/windows.pem /home/syed/ansbile/DevOps/03-Ansible/08-Waiting_for_EC2/playbooks/windows.yml"
   }
 }
 
