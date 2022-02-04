@@ -30,6 +30,11 @@ pipeline {
                  sh 'aws ec2 wait instance-status-ok --region us-west-1'
             }
         }
+        stage('Ansible') {
+            steps {
+                ansibleplaybook(credentialsId: 'ec2-ubuntu', inventory: 'aws_hosts', playbook: 'playbooks/grafana-playbook.yml')
+            }
+        }
         stage('Destroy') {
             steps {
                 sh 'terraform destroy -auto-approve -no-color'
