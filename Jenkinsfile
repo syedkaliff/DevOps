@@ -32,7 +32,7 @@ pipeline {
         }
         stage('Ansible') {
             steps {
-                ansibleplaybook(credentialsId: 'ec2-ubuntu', inventory: 'aws_hosts', playbook: 'playbooks/grafana-playbook.yml')
+                ansiblePlaybook(credentialsId: 'ec2-ubuntu', inventory: 'aws_hosts', playbook: 'playbooks/grafana-playbook.yml')
             }
         }
         stage('Destroy') {
