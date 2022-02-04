@@ -94,12 +94,12 @@ EOF
 #   }
 # }
 
-resource "null_resource" "grafana_install" {
-  depends_on = [aws_instance.mtc_main]
-  provisioner "local-exec" {
-    command = "ansible-playbook -i aws_hosts --key-file /home/syed/.ssh/windows.pem /var/lib/jenkins/workspace/aws-new/playbooks/windows.yml"
-  }
-}
+#resource "null_resource" "grafana_install" {
+#  depends_on = [aws_instance.mtc_main]
+ # provisioner "local-exec" {
+#    command = "ansible-playbook -i aws_hosts --key-file /home/syed/.ssh/windows.pem /var/lib/jenkins/workspace/aws-new/playbooks/windows.yml"
+#  }
+#}
 
 output "instance_ips" {
   value = { for i in aws_instance.mtc_main[*] : i.tags.Name => "${i.public_ip}:3000" }
