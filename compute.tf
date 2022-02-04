@@ -64,6 +64,7 @@ resource "aws_instance" "mtc_main" {
     Name = "mtc-main-${random_id.mtc_node_id[count.index].dec}"
   }
 
+  /*
   provisioner "local-exec" {
    # command = "printf '\n${self.public_ip} ansible_user=ubuntu' >> aws_hosts && aws ec2 wait instance-status-ok --instance-ids ${self.id} --region us-west-1"
     command = <<-EOT
@@ -71,8 +72,12 @@ resource "aws_instance" "mtc_main" {
     # aws ec2 wait instance-status-ok --instance-ids ${self.id} --region us-west-1
     EOT
          
-  }
+  } 
+  */
 
+   provisioner "local-exec" {
+    command = "printf '\n${self.public_ip}' >> aws_hosts"
+  }
   
   provisioner "local-exec" {
     when    = destroy
