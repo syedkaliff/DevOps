@@ -97,7 +97,7 @@ EOF
 resource "null_resource" "grafana_install" {
   depends_on = [aws_instance.mtc_main]
   provisioner "local-exec" {
-    command = "ansible-playbook -i aws_hosts --key-file /home/syed/.ssh/windows.pem /home/syed/ansbile/DevOps/03-Ansible/08-Waiting_for_EC2/playbooks/windows.yml"
+    command = "ansible-playbook -i aws_hosts --key-file /home/syed/.ssh/windows.pem /var/lib/jenkins/workspace/aws-new/playbooks/windows.yml"
   }
 }
 
