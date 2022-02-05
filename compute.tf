@@ -68,7 +68,8 @@ resource "aws_instance" "mtc_main" {
   provisioner "local-exec" {
    # command = "printf '\n${self.public_ip} ansible_user=ubuntu' >> aws_hosts && aws ec2 wait instance-status-ok --instance-ids ${self.id} --region us-west-1"
     command = <<-EOT
-    printf '%s\n' 2a '${self.public_ip} ansible_user=administrator' . x | ex aws_hosts 
+    printf '%s\n' 2a '${self.public_ip} . x | ex aws_hosts 
+    # printf '%s\n' 2a '${self.public_ip} ansible_user=administrator' . x | ex aws_hosts 
     # aws ec2 wait instance-status-ok --instance-ids ${self.id} --region us-west-1
     EOT
          
