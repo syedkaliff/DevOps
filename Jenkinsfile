@@ -81,5 +81,8 @@ pipeline {
         failure {
             sh 'terraform destroy -auto-approve -no-color'
         }
-  
+   aborted {
+            sh 'terraform destroy -auto-approve -no-color'
+        }
+
 }
